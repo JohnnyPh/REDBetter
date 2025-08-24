@@ -136,6 +136,19 @@ Beware though, this will cause the script to re-check every download as it does 
   $> docker-compose run --rm redbetter
 ~~~
 
+## Recent Changes
+
+### Improved Duplicate Detection (2025-01-24)
+
+Modified the format detection logic to be much more generous when checking for existing formats to prevent accidental duplicate uploads. The script now:
+
+- Uses relaxed matching criteria that only requires media type to match
+- Ignores differences in remaster metadata (title, label, catalog number) that often vary between uploads
+- Checks ALL torrents in a group for existing formats as an extra safety measure
+- Prioritizes preventing duplicates over strict metadata matching
+
+This change significantly reduces the risk of uploading formats that already exist on the site, especially for web releases where remaster metadata may be inconsistent between different uploads.
+
 ## Bugs and feature requests
 
 If you have any issues using the script, or would like to suggest a feature, feel free to open an issue in the issue tracker, *provided that you have searched for similar issues already*.

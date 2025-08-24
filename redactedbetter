@@ -36,14 +36,25 @@ def create_description(torrent, flac_dir, format, permalink):
     return description
 
 def formats_needed(group, torrent, supported_formats):
-    same_group = lambda t: t['media'] == torrent['media'] and\
-                           t['remasterYear'] == torrent['remasterYear'] and\
-                           t['remasterTitle'] == torrent['remasterTitle'] and\
-                           t['remasterRecordLabel'] == torrent['remasterRecordLabel'] and\
-                           t['remasterCatalogueNumber'] == torrent['remasterCatalogueNumber']
+    # Much more generous matching to prevent duplicate uploads
+    # Only require media type to match, ignore remaster metadata differences
+    # This prevents issues where existing torrents have slightly different or missing remaster info
+    same_group = lambda t: t['media'] == torrent['media']
 
+    # Get all torrents in the group that match the media type
     others = filter(same_group, group['torrents'])
-    current_formats = set((t['format'], t['encoding']) for t in others)
+    
+    # Also check ALL torrents in the group regardless of media type for extra safety
+    # This catches cases where media might be slightly different (e.g., "WEB" vs "Web")
+    all_torrents = group['torrents']
+    
+    # Collect formats from both filtered and all torrents for maximum coverage
+    current_formats = set()
+    for t in others:
+        current_formats.add((t['format'], t['encoding']))
+    for t in all_torrents:
+        current_formats.add((t['format'], t['encoding']))
+    
     missing_formats = [format for format, details in [(f, redactedapi.formats[f]) for f in supported_formats]\
                            if (details['format'], details['encoding']) not in current_formats]
     allowed_formats = redactedapi.allowed_transcodes(torrent)
